@@ -1,0 +1,32 @@
+body
+{
+  background: #111e13!important;
+  color: white!important;
+}
+
+.form-check-input:checked {
+  background-color: #2bfd0d!important;
+  border-color: #7cfb78!important;
+}
+
+.navbar-brand
+{
+  font-weight: bold;
+}
+
+.navbar-dark {
+  --bs-navbar-color: rgba(255, 255, 255, 0.8)!important;
+}
+
+.light-green {
+  color: #c3ffa2;
+}
+
+.light-yellow {
+  color: #faff5d;
+}
+
+.poll-info
+{
+  color: rgb(255, 255, 255, 0.8)
+}

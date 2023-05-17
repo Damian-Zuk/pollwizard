@@ -1,0 +1,15 @@
+.login-form
+{
+    width: 23rem;
+}
+
+.login-header
+{
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.login-form button
+{
+    width: 100%;
+}
