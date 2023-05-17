@@ -1,21 +1,17 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
+from fastapi import FastAPI
+from routers import users, polls
 
-from database import engine, SessionLocal
-import models
+from models.database import engine
+from models.user import model as userModel
 
-models.Base.metadata.create_all(bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
+userModel.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-@app.get("/api/users")
-def users(db: Session = Depends(get_db)):
-    return db.query(models.User).all()
+app.include_router(users.router)
+app.include_router(polls.router)
+
+
+@app.get('/', tags=["Home"])
+def greet():
+    return {"message": "Backend aplikacji zespołu Ankieciarze"}
