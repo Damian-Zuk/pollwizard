@@ -47,7 +47,7 @@ def user_login(user: schema.UserLogin, db: Session = Depends(get_db)):
     tryLogin = crud.get_user_by_email(db, user.email)
     if tryLogin:
         if verify_password(user.password, tryLogin.password):
-            return signJWT(user.email)
+            return signJWT(user.email, tryLogin.name)
     return {
         "error": "Invalid login details!"
     }

@@ -7,19 +7,20 @@ function Home() {
   const [data, setData] = useState<PollFormProps[]>([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8000/api/polls")
-    .then((response) => {
-      setData(response.data);
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+    axios
+      .get("http://localhost:8000/polls")
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }, []);
-  
+
   return (
     <div className="container">
       {data.map((entry: PollFormProps) => (
-        <PollForm {...entry}/>
+        <PollForm {...entry} />
       ))}
     </div>
   );

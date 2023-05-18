@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
 from auth.jwt_bearer import jwtBearer
+from fastapi.responses import JSONResponse
+import json
 
 router = APIRouter(
     prefix="/polls",
@@ -8,6 +10,6 @@ router = APIRouter(
 )
 
 
-@router.get("/", dependencies=[Depends(jwtBearer())])
-async def read_polls():
-    return [{"name": "Co lepsze iPhone czy Android?"}, {"name": "Co według Ciebie było pierwsze jajko czy kura?"}]
+#@router.get("/", dependencies=[Depends(jwtBearer())])
+#async def read_polls():
+#    return [{"name": "Co lepsze iPhone czy Android?"}, {"name": "Co według Ciebie było pierwsze jajko czy kura?"}]

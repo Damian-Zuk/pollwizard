@@ -12,6 +12,7 @@
     "axios": "^1.4.0",
     "bootstrap": "^5.2.3",
     "react": "^18.2.0",
+    "react-auth-kit": "^2.12.2",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.1"
   },

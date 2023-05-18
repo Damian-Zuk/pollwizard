@@ -30,7 +30,7 @@ function PollForm(props: PollFormProps) {
             <form>
                 <div className="form-group">
                     <h3>{props.title}</h3>
-                    <p className="poll-info">Created by {props.created_by} at {props.created_at}, &nbsp; total votes: {totalVotes}</p>
+                    <p className="poll-info">Created by {props.created_by} at {props.created_at}, total votes: {totalVotes}</p>
                     {props.options.map((option) => (
                         <div className="form-check mb-2">
                             <input type="radio" className="form-check-input" name="pollOption" id={`option_${option.id}`} />
