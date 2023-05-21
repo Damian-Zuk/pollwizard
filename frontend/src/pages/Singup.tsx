@@ -28,9 +28,6 @@ function SignUp() {
     const isAuthenticated = useIsAuthenticated()
     const signIn = useSignIn();
 
-    const captchaError = error["captcha"]
-    const captchaKey = "6LfcGCkmAAAAAKXH1Jzi9Gas2vQX7FXRGHCfHa0o"
-
     if (isAuthenticated())
         return <Navigate to="/" />;
 
@@ -123,7 +120,7 @@ function SignUp() {
         }
     }
 
-    function UserDataInput(fieldName: string, placeholder: string, value: string, setFunc: React.Dispatch<React.SetStateAction<string>>) {
+    const userDataInput = (fieldName: string, placeholder: string, value: string, setFunc: React.Dispatch<React.SetStateAction<string>>) => {
         const errorMessage = error[fieldName as keyof ErrorType]
         return (
             <>
@@ -158,19 +155,19 @@ function SignUp() {
 
                                 <h3 className="fw-normal mb-2 pb-3 login-header">Create account</h3>
 
-                                {UserDataInput("name", "Name", name, setName)}
-                                {UserDataInput("email", "Email", email, setEmail)}
-                                {UserDataInput("password", "Password", password, setPassword)}
-                                {UserDataInput("passwordRepeat", "Repeat password", passwordRepeat, setPasswordRepeat)}
+                                {userDataInput("name", "Name", name, setName)}
+                                {userDataInput("email", "Email", email, setEmail)}
+                                {userDataInput("password", "Password", password, setPassword)}
+                                {userDataInput("passwordRepeat", "Repeat password", passwordRepeat, setPasswordRepeat)}
 
                                 <ReCAPTCHA
-                                    sitekey={captchaKey}
+                                    sitekey="6LfcGCkmAAAAAKXH1Jzi9Gas2vQX7FXRGHCfHa0o"
                                     onChange={onCaptchaChange}
                                     className="recaptcha-from mt-5"
                                 />
-                                {captchaError.length > 0 && <div className="error-color mt-1">{captchaError}</div>}
+                                {error.captcha.length > 0 && <div className="error-color mt-1">{error.captcha}</div>}
 
-                                <div className={captchaError.length > 0 ? "pt-1 mt-3" : "pt-1 mt-5" }>
+                                <div className={error.captcha.length > 0 ? "pt-1 mt-3" : "pt-1 mt-5" }>
                                     <button 
                                         className="btn btn-success btn-lg btn-block" 
                                         type="button" 
