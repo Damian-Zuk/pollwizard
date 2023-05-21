@@ -36,10 +36,19 @@ async def del_user(userID: str, db: Session = Depends(get_db)):
 
 @router.post("/signup")
 async def user_signup(user: schema.UserCreate, db: Session = Depends(get_db)):
+    errors = { "errors": {} }
+
     if crud.get_user_by_email(db, user.email):
-        return {"error": "Email used"}
+        errors["errors"]["email"] = "This email is already in use!"
+    
+    if crud.get_user_by_name(db, user.name):
+        errors["errors"]["name"] = "This name is already in use!"
+    
+    if len(errors["errors"]):
+        return errors
+    
     crud.create_user(db, user)
-    return signJWT(user.email)
+    return signJWT(user.email, user.name)
 
 
 @router.post("/login")

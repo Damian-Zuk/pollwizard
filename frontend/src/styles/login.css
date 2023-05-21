@@ -1,6 +1,6 @@
 .login-form
 {
-    width: 23rem;
+    width: 25rem;
 }
 
 .login-header
@@ -18,4 +18,10 @@
 {
     color: rgb(222, 97, 97);
     text-align: center;
+}
+
+.recaptcha-from > div > div
+{
+    margin-left: auto!important;
+    margin-right: auto!important;
 }

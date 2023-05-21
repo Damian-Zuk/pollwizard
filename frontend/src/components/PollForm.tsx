@@ -18,7 +18,7 @@ export interface PollFormProps
 }
 
 function PollForm(props: PollFormProps) {
-    let [showResults, setShowResults] = useState(false)
+    const [showResults, setShowResults] = useState(false)
     
     let totalVotes = 0
     props.options.map((option) => {

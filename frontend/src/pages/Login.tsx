@@ -58,7 +58,7 @@ function Login() {
 
                             <form className="login-form mx-auto">
 
-                                <h3 className="fw-normal mb-3 pb-3 login-header">Welcome back</h3>
+                                <h3 className="fw-normal mb-3 pb-3 login-header">Sign In</h3>
                                 <p className="error-color">{error}</p>
 
                                 <div className="form-outline mb-4">
