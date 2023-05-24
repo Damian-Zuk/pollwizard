@@ -1,6 +1,10 @@
 from passlib.context import CryptContext
+import re
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+specials = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+numbers = re.compile('[0-9]')
+
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -8,3 +12,17 @@ def verify_password(plain_password, hashed_password):
 
 def get_password_hash(password):
     return pwd_context.hash(password)
+
+
+def check_password_complexity(password):
+    if len(password) < 8:
+        return True
+    if not any(ele.isupper() for ele in password):
+        return True
+    if not any(ele.islower() for ele in password):
+        return True
+    if (numbers.search(password) == None):
+        return True
+    if (specials.search(password) == None):
+        return True
+    return False

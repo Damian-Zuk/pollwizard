@@ -4,21 +4,23 @@ from decouple import config
 
 JWT_SECRET = config("secret")
 JWT_ALGORITHM = config("algorithm")
-    
-def signJWT(userID: str, userName: str):
+TOKEN_EXPIRY = config("token_time", default=3600, cast=int)
+
+
+def signJWT(userID: str):
     payload = {
         "userID": userID,
-        "expiry": time.time() + 3600
+        "expiry": time.time() + TOKEN_EXPIRY
     }
-    token  = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return {
-        "token": token,
-        "userName": userName
+        "token": token
     }
+
 
 def decodeJWT(token: str):
     try:
         decode_token = jwt.decode(token, JWT_SECRET, algorithms=JWT_ALGORITHM)
-        return decode_token if decode_token['expires'] >= time.time() else None
+        return decode_token if decode_token['expiry'] >= time.time() else None
     except:
         return {}
