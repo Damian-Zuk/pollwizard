@@ -1,12 +1,11 @@
 import { useIsAuthenticated } from 'react-auth-kit';
-import '../styles/main.css'
 
 function Navbar() {
     const isAuthenticated = useIsAuthenticated()
 
     return (
         <>
-        <nav className="navbar navbar-expand-lg bg-success navbar-dark mb-5">
+        <nav className="navbar navbar-expand-lg navbar-dark mb-5">
         <div className="container-fluid">
 
             <a className="navbar-brand mx-5" href="/">Poll<span className="light-green">Wizard</span></a>
@@ -18,24 +17,22 @@ function Navbar() {
 
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                 <li className="nav-item mx-2">
-                <a className="nav-link" href="/">Home</a>
+                <a className="nav-link" href="/"><i className="fa-solid fa-house"></i> Home</a>
                 </li>
                 <li className="nav-item mx-2">
-                <a className="nav-link" href="/create">Create poll</a>
+                <a className="nav-link" href="/create"><i className="fa-solid fa-plus"></i> Create poll</a>
                 </li>
             </ul>
 
             <ul className="navbar-nav d-flex flex-row me-5">
-                <li className="nav-item me-3 me-lg-0 mx-2">
+                <li className="nav-item me-3 me-lg-0 mx-3">
                 { isAuthenticated() 
-                ? <a className="nav-link" href="/profile">My profile</a>
-                : <a className="nav-link" href="/login">Sign in</a> }
+                ? <a className="nav-link" href="/profile"><i className="fa-solid fa-user"></i> My profile</a>
+                : <a className="nav-link" href="/login"><i className="fa-solid fa-right-to-bracket"></i> Sign in</a> }
                 </li>
 
-                <li className="nav-item me-3 me-lg-0 mx-2">
-                { isAuthenticated() 
-                ? <a className="nav-link" href="/logout">Log out</a>
-                : <a className="nav-link" href="/signup">Sign up</a> }
+                <li className="nav-item me-3 me-lg-0 mx-3">
+                { isAuthenticated() && <a className="nav-link" href="/logout"><i className="fa-solid fa-right-from-bracket"></i> Log out</a> }
                 </li>
             </ul>
 

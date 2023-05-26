@@ -3,7 +3,6 @@ import { useSignIn } from 'react-auth-kit'
 import { Navigate } from "react-router-dom";
 import { useIsAuthenticated } from 'react-auth-kit';
 import axios from "axios";
-import "../styles/login.css"
 
 function Login() {
     const emailRef = useRef<HTMLInputElement>(null)
@@ -80,6 +79,10 @@ function Login() {
 
                                 <div className="pt-1 mb-4">
                                     <button className="btn btn-success btn-lg btn-block" type="button" onClick={() => onSubmit()}>Sign in</button>
+                                </div>
+
+                                <div className="text-center">
+                                    <p>You do not have an account? <a href="/signup">Sign up here</a></p>
                                 </div>
 
                             </form>

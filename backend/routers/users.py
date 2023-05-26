@@ -30,25 +30,22 @@ async def get_user_data(token: Annotated[str, Depends(JWTBearer())], db: Session
 
 @router.post("/signup")
 async def user_signup(user: schema.UserCreate, db: Session = Depends(get_db)):
-    errors = {"errors": {}}
+    errors = {}
 
     if crud.get_user_by_email(db, user.email):
-        errors["errors"]["email"] = "This email is already in use!"
+        errors["email"] = "This email is already in use!"
 
     if crud.get_user_by_name(db, user.name):
-        errors["errors"]["name"] = "This name is already in use!"
+        errors["name"] = "This name is already in use!"
 
     if check_password_complexity(user.password):
-        errors["errors"]["pass"] = "The password is not complex enough!"
+        errors["pass"] = "The password is not complex enough!"
 
-    if user.password != user.repassword:
-        errors["errors"]["repass"] = "The passwords are not the same!"
-
-    if len(errors["errors"]):
-        return errors
-
+    if len(errors):
+        return {"errors": errors}
+    
     crud.create_user(db, user)
-    return signJWT(user.email)
+    return signJWT(user.email, user.name)
 
 
 @router.post("/login")
@@ -56,7 +53,7 @@ def user_login(user: schema.UserLogin, db: Session = Depends(get_db)):
     tryLogin = crud.get_user_by_email(db, user.email)
     if tryLogin:
         if verify_password(user.password, tryLogin.password):
-            return signJWT(user.email)
+            return {"token": signJWT(user.email), "userName": tryLogin.name}
     return {
         "error": "Invalid login details!"
     }

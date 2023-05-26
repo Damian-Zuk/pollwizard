@@ -10,7 +10,7 @@ class UserLogin(UserBase):
 
 
 class UserCreate(UserLogin):
-    repassword: str
+    password: str
     name: str
 
 

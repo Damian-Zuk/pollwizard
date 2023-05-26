@@ -1,29 +1,27 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Navigate } from "react-router-dom";
 import { useIsAuthenticated } from 'react-auth-kit';
 import { useSignIn } from 'react-auth-kit'
-import { ToastContainer, toast } from 'react-toastify'
+import { toast } from 'react-toastify'
 import ReCAPTCHA from 'react-google-recaptcha'
 import axios from "axios";
-import "../styles/login.css"
-import "react-toastify/dist/ReactToastify.css"
 
 interface ErrorType {
     email: string;
     name: string;
-    password: string;
-    passwordRepeat: string;
+    pass: string;
+    repass: string;
     captcha: string;
   }
 
 function SignUp() {
     const [email, setEmail] = useState("")
     const [name, setName] = useState("")
-    const [password, setPassword] = useState("")
-    const [passwordRepeat, setPasswordRepeat] = useState("")
+    const [pass, setPassword] = useState("")
+    const [repass, setPasswordRepeat] = useState("")
     const [captchaIsDone, setCaptchaIsDone] = useState(false)
     const [signUpSuccess, setSignUpSuccess] = useState(false)
-    const [error, setError] = useState<ErrorType>({email: "", name: "", password: "", passwordRepeat: "", captcha: ""})
+    const [error, setError] = useState<ErrorType>({email: "", name: "", pass: "", repass: "", captcha: ""})
     
     const isAuthenticated = useIsAuthenticated()
     const signIn = useSignIn();
@@ -33,8 +31,8 @@ function SignUp() {
 
     const onCaptchaChange = () => {
         setCaptchaIsDone(true)
-        setError({...error, captcha: ""})
-        console.log("Captcha change")
+        if (error.captcha.length)
+            setError({...error, captcha: ""})
     }
 
     const validateEmail = (email: string) => {
@@ -45,18 +43,18 @@ function SignUp() {
     const onSubmit = async () => {
 
         const errorReset = {
-            email:          email.length          ? "" : "This field must not be empty!",
-            name:           name.length           ? "" : "This field must not be empty!",
-            password:       password.length       ? "" : "This field must not be empty!",
-            passwordRepeat: passwordRepeat.length ? "" : "This field must not be empty!",
+            email:   email.length  ? "" : "This field cannot be empty!",
+            name:    name.length   ? "" : "This field cannot be empty!",
+            pass:    pass.length   ? "" : "This field cannot be empty!",
+            repass:  repass.length ? "" : "This field cannot be empty!",
             captcha: captchaIsDone ? "" : "Please complete the CAPTCHA verification to proceed.",
         }
 
         if (email.length && !validateEmail(email))
             errorReset.email = "This is not valid email address!"
         
-        if (password != passwordRepeat)
-            errorReset.passwordRepeat = "Passwords do not match!"
+        if (pass != repass)
+            errorReset.repass = "The passwords are not the same!"
         
         setError(errorReset)
 
@@ -70,7 +68,7 @@ function SignUp() {
                 {
                     email: email,
                     name: name,
-                    password: password
+                    password: pass,
                 }
             )
 
@@ -127,7 +125,7 @@ function SignUp() {
                 <div className="mb-1">{placeholder}</div>
                 <div className={errorMessage.length > 0 ? "form-outline" : "form-outline mb-4"} >
                     <input 
-                        type={fieldName.toLowerCase().includes("password") ? "password" : "text"}
+                        type={fieldName.toLowerCase().includes("pass") ? "password" : "text"}
                         id={fieldName} 
                         className={errorMessage.length > 0 
                             ? "form-control form-control-lg is-invalid" 
@@ -144,12 +142,11 @@ function SignUp() {
 
     return (
         <>
-        <ToastContainer />
         <section className="vh-100">
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-sm-6 mx-auto">
-                        <div className="d-flex align-items-center h-custom-2 ms-xl-4 mt-4">
+                        <div className="d-flex align-items-center">
 
                             <form className="login-form mx-auto">
 
@@ -157,13 +154,17 @@ function SignUp() {
 
                                 {userDataInput("name", "Name", name, setName)}
                                 {userDataInput("email", "Email", email, setEmail)}
-                                {userDataInput("password", "Password", password, setPassword)}
-                                {userDataInput("passwordRepeat", "Repeat password", passwordRepeat, setPasswordRepeat)}
+                                {userDataInput("pass", "Password", pass, setPassword)}
+                                {userDataInput("repass", "Repeat password", repass, setPasswordRepeat)}
+                                
+                                <p className="password-disclaimer mx-auto">
+                                    Passwords must be at least 8 characters long and include at least one uppercase and lowercase letter, one digit, and one special character.
+                                </p>
 
                                 <ReCAPTCHA
                                     sitekey="6LfcGCkmAAAAAKXH1Jzi9Gas2vQX7FXRGHCfHa0o"
                                     onChange={onCaptchaChange}
-                                    className="recaptcha-from mt-5"
+                                    className="recaptcha-from mt-4"
                                 />
                                 {error.captcha.length > 0 && <div className="error-color mt-1">{error.captcha}</div>}
 

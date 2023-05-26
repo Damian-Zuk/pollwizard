@@ -4,7 +4,7 @@ from . import model, schema
 
 
 def get_polls(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(model.Poll).offset(skip).limit(limit).all()
+    return db.query(model.Poll).order_by(model.Poll.created_at.desc()).offset(skip).limit(limit).all()
 
 
 def get_poll(db: Session, poll_id: int):
