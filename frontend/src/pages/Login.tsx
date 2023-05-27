@@ -2,12 +2,14 @@ import { useRef, useState } from 'react';
 import { useSignIn } from 'react-auth-kit'
 import { Navigate } from "react-router-dom";
 import { useIsAuthenticated } from 'react-auth-kit';
+import { toast } from 'react-toastify'
 import axios from "axios";
 
 function Login() {
     const emailRef = useRef<HTMLInputElement>(null)
     const passwordRef = useRef<HTMLInputElement>(null)
     const [error, setError] = useState("")
+    
     const signIn = useSignIn();
     const isAuthenticated = useIsAuthenticated()
 
@@ -19,32 +21,31 @@ function Login() {
         if (!emailRef.current?.value.length || !passwordRef.current?.value.length)
             return;
 
-        try 
-        {
-            const res = await axios.post(
-                "http://localhost:8000/users/login",
-                {
-                    "email": emailRef.current.value,
-                    "password": passwordRef.current.value
-                }
-            )
-
-            if ("error" in res.data)
+        try {
+            const response = await axios.post("http://localhost:8000/users/login",
+            {
+                "email": emailRef.current.value,
+                "password": passwordRef.current.value
+            })
+            if ("error" in response.data)
                 setError("Invalid email address or password!")
             else
             {
-                signIn(
-                    {
-                        token: res.data.token,
-                        expiresIn: 3600,
-                        tokenType: "Bearer",
-                        authState: { email: emailRef.current.value, name: res.data.userName }
-                    }
-                )
+                signIn({
+                    token: response.data.token,
+                    expiresIn: 3600,
+                    tokenType: "Bearer",
+                    authState: { email: emailRef.current!.value, name: response.data.userName }
+                })
             }
-        } catch(err) {
-            setError("Invalid email address or password!")
-            console.log("Error: ", err)
+        } catch (err: any) {
+            if (err.response!.status == 422)
+                setError("Invalid email address or password!")
+            else 
+                toast.error(err.response!.data.detail, {
+                    position: "top-center",
+                    autoClose: 2000,
+                });
         }
     }
 

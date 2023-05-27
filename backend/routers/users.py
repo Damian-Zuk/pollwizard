@@ -45,7 +45,7 @@ async def user_signup(user: schema.UserCreate, db: Session = Depends(get_db)):
         return {"errors": errors}
     
     crud.create_user(db, user)
-    return signJWT(user.email, user.name)
+    return {"token": signJWT(user.email)}
 
 
 @router.post("/login")

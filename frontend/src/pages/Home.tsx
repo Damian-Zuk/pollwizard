@@ -28,7 +28,6 @@ function Home() {
             {data.map((entry: PollFormProps) => (
                 <PollForm {...entry}  _title_is_link={true} key={entry.id}/>
             ))}
-            {data.length == 0 && <h2 className="text-center">No poll has been created yet :(</h2>}
         </div>
         
     );

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { useState } from 'react';
 import { useAuthHeader } from 'react-auth-kit'
+import { useIsAuthenticated } from 'react-auth-kit';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'
 
 export interface PollOption
@@ -25,48 +27,53 @@ function PollForm(props: PollFormProps) {
     const [showResults, setShowResults] = useState(false)
     const [selectedOption, setSelectedOption] = useState(-1)
     const [voted, setVoted] = useState(false)
+
     const authHeader = useAuthHeader()
+    const isAuthenticated = useIsAuthenticated()
+    const navigate = useNavigate();
     
     const onVote = async (event: any) => {
         event.preventDefault()
+
         if (selectedOption == -1)
             return
-        try 
-        {
-            await axios.post(`http://localhost:8000/polls/vote?optionID=${selectedOption}`, {},
-                {
-                    headers: { Authorization: authHeader() }
-                }
-            ).then((response) => {
-                if ("error" in response.data)
-                {
-                    toast.error(response.data.error, {
-                        position: "top-center",
-                        autoClose: 2000,
-                    });
-                }
-                else
-                {
-                    let index = 0;
-                    for (var option of props.options.values()) {
-                        if (option.id == selectedOption) {
-                            props.options[index].votes++
-                            setShowResults(true)
-                            //setVoted(true)
-                            break
-                        }
-                        index++
-                    }
-                    toast.success(`Voted for ${props.created_by}'s poll`, {
-                        position: "top-center",
-                        autoClose: 2000,
-                        hideProgressBar: true
-                    });
-                }
+        
+        try {
+            const response =  await axios.post(`http://localhost:8000/polls/vote?optionID=${selectedOption}`, {},
+            {
+                headers: { Authorization: authHeader() }
             })
-            
-        } catch(err) {
-            console.log("Error: ", err)
+
+            if ("error" in response.data)
+            {
+                toast.error(response.data.error, {
+                    position: "top-center",
+                    autoClose: 2000,
+                });
+            }
+            else
+            {
+                let index = 0;
+                for (var option of props.options.values()) {
+                    if (option.id == selectedOption) {
+                        props.options[index].votes++
+                        setShowResults(true)
+                        setVoted(true)
+                        break
+                    }
+                    index++
+                }
+                toast.success(`Voted for ${props.created_by}'s poll`, {
+                    position: "top-center",
+                    autoClose: 2000,
+                    hideProgressBar: true
+                });
+            }
+        } catch (err: any) {
+            toast.error(err.response!.data.detail, {
+                position: "top-center",
+                autoClose: 2000,
+            });
         }
     }
 
@@ -146,7 +153,12 @@ function PollForm(props: PollFormProps) {
                     :
                         <button className="btn btn-success" 
                             disabled={props.voted_for != -1}
-                            onClick={(e) => onVote(e)}>
+                            onClick={(e) => {
+                                    if (isAuthenticated())
+                                        onVote(e)
+                                    else
+                                        navigate('/login');
+                                }}>
                             Vote
                         </button>
                     }

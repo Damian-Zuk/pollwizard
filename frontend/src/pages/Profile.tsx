@@ -11,7 +11,7 @@ function Profile()
         return <Navigate to="/" />;
 
     return (
-        <div className="container">
+        <div className="container poll-forms-container">
             <h1>Hello {auth()?.name}!</h1>
         </div>
     );

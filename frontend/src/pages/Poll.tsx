@@ -34,12 +34,8 @@ function Poll() {
     }, []);
 
     return (
-        <div className="vh-100 container">
-            <div className="row">
-                <div className="col-sm-6 mx-auto">
-                    <PollForm {...data} _title_is_link={false}/>
-                </div>
-            </div>
+        <div className="container poll-forms-container">
+            <PollForm {...data} _title_is_link={false}/>
         </div>
     );
 }

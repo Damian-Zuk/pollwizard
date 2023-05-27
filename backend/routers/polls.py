@@ -89,8 +89,8 @@ async def vote_for_poll(token: Annotated[str, Depends(JWTBearer())], optionID: i
     if not db.query(PollOptions).filter(PollOptions.id==optionID).count():
         return {"error": "Option doesn't exists."}
 
-    # poll = pollCrud.get_poll(db, optionCrud.get_poll_id(db, optionID))
-    # if voteCrud.get_user_vote_id(db, user, poll) != -1:
-    #     return {"error": "You already voted for this poll!"}
+    poll = pollCrud.get_poll(db, optionCrud.get_poll_id(db, optionID))
+    if voteCrud.get_user_vote_id(db, user, poll) != -1:
+        return {"error": "You already voted for this poll!"}
     
     return voteCrud.vote_for_poll(db, user.id, optionID)

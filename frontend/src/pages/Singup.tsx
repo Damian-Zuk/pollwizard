@@ -61,60 +61,41 @@ function SignUp() {
         for (const msg of Object.entries(errorReset).values())
             if (msg[1].length) 
                 return;
-        try 
-        {
-            const res = await axios.post(
-                "http://localhost:8000/users/signup",
-                {
-                    email: email,
-                    name: name,
-                    password: pass,
-                }
-            )
 
-            if ("errors" in res.data)
+        try {
+            const response = await axios.post("http://localhost:8000/users/signup",
             {
-                for (const [e, message] of Object.entries(res.data["errors"]))
-                {
+                email: email,
+                name: name,
+                password: pass,
+            })
+
+            if ("errors" in response.data)
+            {
+                for (const [e, message] of Object.entries(response.data["errors"]))
                     setError((prevError) => ({ ...prevError, [e]: message }));
-                }
                 return;
             }
-
             setSignUpSuccess(true)
-            toast.success("Account successfully created! Returning to homepage ...", {
+            toast.success("Account successfully created! Redirecting to homepage ...", {
                 position: "top-center",
                 autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
                 onClose: () => {
                     signIn(
                         {
-                            token: res.data.token,
+                            token: response.data.token,
                             expiresIn: 3600,
                             tokenType: "Bearer",
-                            authState: { email: email, name: res.data.userName }
+                            authState: { email: email, name: name }
                         }
                     )
                 }
             });
-
-        } catch(err) {
-            toast.error("Unexpected error occured!", {
+        } catch (err: any) {
+            toast.error(err.response!.data.detail, {
                 position: "top-center",
                 autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
             });
-            console.log("Error: ", err)
         }
     }
 

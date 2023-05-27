@@ -2,6 +2,8 @@ import { useState } from "react"
 import { useIsAuthenticated } from 'react-auth-kit';
 import { useAuthHeader } from 'react-auth-kit'
 import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify'
 import axios from "axios";
 
 function CreatePoll() {
@@ -9,35 +11,31 @@ function CreatePoll() {
     const [optionCount, setOptionCount] = useState(2)
     const [pollTitle, setPollTitle] = useState("")
     const [optionValues, setOptionValues] = useState<string[]>(["", ""])
-    const [createdId, setCreatedId] = useState(-1)
     
     const isAuthenticated = useIsAuthenticated()
     const authHeader = useAuthHeader()
+    const navigate = useNavigate()
 
     if (!isAuthenticated())
         return <Navigate to="/login" />;
 
-    if (createdId != -1)
-        return <Navigate to={`/poll/${createdId}`} />
-
     const onSubmit = async () => {
-        try 
-        {
-            const res = await axios.post(
-                "http://localhost:8000/polls",
-                {
-                    title: pollTitle,
-                    options: optionValues
-                },
-                {
-                    headers: { Authorization: authHeader() }
-                }
-            ).then((response) => {
-                setCreatedId(response.data.id)
+        try {
+            const response = await axios.post("http://localhost:8000/polls",
+            {
+                title: pollTitle,
+                options: optionValues
+            },
+            {
+                headers: { Authorization: authHeader() }
             })
-            
-        } catch(err) {
-            console.log("Error: ", err)
+            navigate(`/poll/${response.data.id}`)
+
+        } catch (err: any) {
+            toast.error(err.response!.data.detail, {
+                position: "top-center",
+                autoClose: 2000,
+            });
         }
     }
 
