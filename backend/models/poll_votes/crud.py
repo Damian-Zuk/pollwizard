@@ -14,7 +14,7 @@ def vote_for_poll(db: Session, userID: int, optionID: int):
     return db_vote
 
 
-def get_user_vote(db: Session, user: User, poll: Poll):
+def get_user_vote_id(db: Session, user: User, poll: Poll):
     poll_options = crud.get_poll_options(db, poll.id)
     user_vote = (
         db.query(model.PollVotes)

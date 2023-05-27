@@ -5,14 +5,12 @@ import { useAuthHeader } from 'react-auth-kit'
 import { useIsAuthenticated } from 'react-auth-kit';
 import PollForm, { PollFormProps } from "../components/PollForm"
 
-function Poll(){
+function Poll() {
     const { pollId } = useParams()
 
-    const isAuth = useIsAuthenticated()
+    const isAuthenticated = useIsAuthenticated()
     const authHeader = useAuthHeader()
-
-    const header = isAuth() ? {Authorization: authHeader()} : {}
-    const endpoint = isAuth() ? "one-auth" : "one"
+    const header = {headers: isAuthenticated() ? {Authorization: authHeader()} : {}}
 
     const [data, setData] = useState<PollFormProps>({
         id: 0,
@@ -25,13 +23,13 @@ function Poll(){
     });
 
     useEffect(() => {
-      axios
-        .get(`http://localhost:8000/polls/${endpoint}?poll_id=${pollId}`, {headers: header})
+        axios
+        .get(`http://localhost:8000/polls/?poll_id=${pollId}`, header)
         .then((response) => {
-          setData(response.data[0]);
+            setData(response.data[0]);
         })
         .catch((error) => {
-          console.error(error);
+            console.error(error);
         });
     }, []);
 

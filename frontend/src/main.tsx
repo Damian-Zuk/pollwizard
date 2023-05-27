@@ -17,10 +17,10 @@ import Poll from './pages/Poll';
 import Navbar from './components/Navbar'
 
 import 'bootstrap/dist/css/bootstrap.css'
-import "./styles/main.css"
 import "react-toastify/dist/ReactToastify.css"
+import "./styles/main.css"
 
-import background from "../public/interlaced.png"
+import background from "./assets/interlaced.png"
 
 const router = createBrowserRouter([
   {
