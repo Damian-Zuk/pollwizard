@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, HTTPException
 from auth.jwt_bearer import JWTBearer
 from dependencies import get_db
 from sqlalchemy.orm import Session
@@ -40,8 +40,10 @@ def create_get_response(polls : list[Poll], db: Session, auth_user: User=None):
 
 
 @router.get("/")
-async def get_polls(poll_id: int, db: Session = Depends(get_db), authorization: str = Header(default=None)):
+async def get_poll(poll_id: int, db: Session = Depends(get_db), authorization: str = Header(default=None)):
     poll = pollCrud.get_poll(db, poll_id)
+    if poll is None:
+        raise HTTPException(status_code=404, detail="Poll not found")
     if authorization:
         token = authorization.split(" ")[1]
         user = get_user_identity(token, db)
@@ -87,7 +89,7 @@ async def vote_for_poll(token: Annotated[str, Depends(JWTBearer())], option_id: 
     user = get_user_identity(token, db)
     
     if not db.query(PollOptions).filter(PollOptions.id==option_id).count():
-        return {"error": "Option does not exists"}
+        return {"error": "This option does not exists"}
 
     poll = pollCrud.get_poll(db, optionCrud.get_poll_id(db, option_id))
     if voteCrud.get_user_vote_id(db, user, poll) != -1:
@@ -101,7 +103,7 @@ async def delete_poll(token: Annotated[str, Depends(JWTBearer())], poll_id: int,
     poll = pollCrud.get_poll(db, poll_id)
     
     if user.id != poll.user_id:
-        return {"error": "You are not author"}
+        return {"error": "You are not an author"}
     
     pollCrud.delete_poll(db, poll)
     return {"message": "Deleted"}

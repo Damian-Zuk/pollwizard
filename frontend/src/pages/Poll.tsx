@@ -11,6 +11,7 @@ function Poll() {
     const isAuthenticated = useIsAuthenticated()
     const authHeader = useAuthHeader()
     const header = {headers: isAuthenticated() ? {Authorization: authHeader()} : {}}
+    const [notFound, setNotFound] = useState(false)
 
     const [data, setData] = useState<PollFormProps>({
         id: 0,
@@ -28,10 +29,21 @@ function Poll() {
         .then((response) => {
             setData(response.data[0]);
         })
-        .catch((error) => {
-            console.error(error);
+        .catch((err) => {
+            if (err.response.status == 404)
+                setNotFound(true)
+            else 
+                console.log(err)
         });
     }, []);
+
+    if (notFound)
+        return (
+            <div className="container vh-100 text-center">
+                <h1>Error 404</h1>
+                <h3>Poll not found</h3>
+            </div>
+        );
 
     return (
         <div className="container poll-forms-container">
