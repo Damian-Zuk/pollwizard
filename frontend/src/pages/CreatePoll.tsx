@@ -29,6 +29,11 @@ function CreatePoll() {
             {
                 headers: { Authorization: authHeader() }
             })
+            toast.success(`The poll has been created`, {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: true
+            });
             navigate(`/poll/${response.data.id}`)
 
         } catch (err: any) {

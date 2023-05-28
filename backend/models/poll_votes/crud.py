@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 
 from . import model
+from ..poll_options import crud
+
 from ..user.model import User
 from ..poll.model import Poll
-from ..poll_options import crud
 
 
 def vote_for_poll(db: Session, userID: int, optionID: int):
@@ -25,3 +26,8 @@ def get_user_vote_id(db: Session, user: User, poll: Poll):
     if user_vote is None:
         return -1
     return user_vote.poll_option_id
+
+
+def delete_votes(db: Session, poll: Poll):
+    poll_options = crud.get_poll_options(db, poll.id)
+    db.query(model.PollVotes).filter(model.PollVotes.poll_option_id.in_([option.id for option in poll_options])).delete()

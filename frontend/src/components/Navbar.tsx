@@ -1,7 +1,9 @@
 import { useIsAuthenticated } from 'react-auth-kit';
+import { useAuthUser } from 'react-auth-kit'
 
 function Navbar() {
     const isAuthenticated = useIsAuthenticated()
+    const user = useAuthUser()
 
     return (
         <>
@@ -27,7 +29,7 @@ function Navbar() {
             <ul className="navbar-nav d-flex flex-row me-5">
                 <li className="nav-item me-3 me-lg-0 mx-3">
                 { isAuthenticated() 
-                ? <a className="nav-link" href="/profile"><i className="fa-solid fa-user"></i> My profile</a>
+                ? <a className="nav-link" href={`/profile/${user()?.name}`}><i className="fa-solid fa-user"></i> My profile</a>
                 : <a className="nav-link" href="/login"><i className="fa-solid fa-right-to-bracket"></i> Sign in</a> }
                 </li>
 

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from . import model, schema
+from ..poll_options import crud as optionsCrud
 
 
 def get_polls(db: Session, skip: int = 0, limit: int = 100):
@@ -17,3 +18,9 @@ def create_poll(db: Session, poll: schema.PollCreate, userID: int):
     db.commit()
     db.refresh(db_poll)
     return db_poll
+
+
+def delete_poll(db: Session, poll: model.Poll):
+    optionsCrud.delete_options(db, poll)
+    db.delete(poll)
+    db.commit()

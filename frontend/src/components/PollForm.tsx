@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { useAuthHeader } from 'react-auth-kit'
+import { useAuthHeader, useAuthUser } from 'react-auth-kit'
 import { useIsAuthenticated } from 'react-auth-kit';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'
+import { confirmAlert } from 'react-confirm-alert';
 
 export interface PollOption
 {
@@ -20,26 +21,34 @@ export interface PollFormProps
     created_at: string,
     voted_for: number,
     options: PollOption[],
-    _title_is_link: boolean
+    _is_poll_page: boolean
 }
 
 function PollForm(props: PollFormProps) {
     const [showResults, setShowResults] = useState(false)
     const [selectedOption, setSelectedOption] = useState(-1)
     const [voted, setVoted] = useState(false)
+    const [deleted, setDeleted] = useState(false)
 
     const authHeader = useAuthHeader()
     const isAuthenticated = useIsAuthenticated()
     const navigate = useNavigate();
+    const user = useAuthUser()
+
+    if (deleted)
+        return (<></>)
     
     const onVote = async (event: any) => {
         event.preventDefault()
+
+        if (!isAuthenticated())
+            navigate('/login');
 
         if (selectedOption == -1)
             return
         
         try {
-            const response =  await axios.post(`http://localhost:8000/polls/vote?optionID=${selectedOption}`, {},
+            const response =  await axios.post(`http://localhost:8000/polls/vote?option_id=${selectedOption}`, {},
             {
                 headers: { Authorization: authHeader() }
             })
@@ -77,6 +86,46 @@ function PollForm(props: PollFormProps) {
         }
     }
 
+    const onDelete = async (pollID: number, isPollPage: boolean) => {
+        try {
+            await axios.delete(`http://localhost:8000/polls/?poll_id=${pollID}`, {
+                headers: { Authorization: authHeader() }
+            })
+            toast.success(`The poll has been deleted`, {
+                position: "top-center",
+                autoClose: 1000,
+                hideProgressBar: true
+            });
+            if (isPollPage)
+                navigate("/")
+            setDeleted(true)
+        } catch (err: any) {
+            toast.error(err.response!.data.error, {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: true
+            });
+        }
+    }
+
+    const showDeleteConfirmation = (e: any, pollID: number, isPollPage: boolean) => {
+        e.preventDefault()
+        confirmAlert({
+            title: 'Confirmation',
+            message: 'Are you sure to delete this poll?',
+            buttons: [
+              {
+                label: 'Delete',
+                onClick: () => onDelete(pollID, isPollPage)
+              },
+              {
+                label: 'Cancel',
+                onClick: () => {}
+              }
+            ]
+          });
+    }
+
     let totalVotes = 0
     props.options.map((option) => {
         totalVotes += option.votes
@@ -87,9 +136,9 @@ function PollForm(props: PollFormProps) {
             <div className="row">
                 <div className="col-md-8">
                     <div className="poll-title">
-                        {props._title_is_link 
-                        ? <a href={`/poll/${props.id}`}><h3>{props.title}</h3></a>
-                        : <h3>{props.title}</h3>}
+                        {props._is_poll_page 
+                        ? <h3>{props.title}</h3>
+                        : <a href={`/poll/${props.id}`}><h3>{props.title}</h3></a>}
                     </div>
 
                     {props.options.map((option) => (
@@ -142,24 +191,26 @@ function PollForm(props: PollFormProps) {
 
             <div className="poll-form-buttons-container">
                 <div className="poll-form-buttons-block">
+                    
+                    { user()?.name == props.created_by &&
+                        <button className="btn btn-danger"
+                            onClick={(e) => showDeleteConfirmation(e, props.id, props._is_poll_page)}>
+                            <i className="fa-solid fa-trash"></i>
+                        </button>
+                    }
 
                     <button className="btn btn-success mx-3" 
                         onClick={(e) => {e.preventDefault(); setShowResults(!showResults)}}>
-                            Show results
+                            {showResults ? `Hide results` : `Show results` }
                     </button>
 
                     { props.voted_for != -1 || voted
-                    ? <div className="d-inline-block align-middle"><i className="fa-solid fa-check"></i> Voted </div> 
+                    ? <div className="d-inline-block align-middle mx-2"><i className="fa-solid fa-check"></i> Voted </div> 
                     :
                         <button className="btn btn-success" 
                             disabled={props.voted_for != -1}
-                            onClick={(e) => {
-                                    if (isAuthenticated())
-                                        onVote(e)
-                                    else
-                                        navigate('/login');
-                                }}>
-                            Vote
+                            onClick={onVote}>
+                            <i className="fa-solid fa-check"></i> Vote
                         </button>
                     }
 

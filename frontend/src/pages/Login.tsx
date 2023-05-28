@@ -49,6 +49,11 @@ function Login() {
         }
     }
 
+    const onKeyPress = (e: any) => {
+        if (e.keyCode === 13)
+            onSubmit()
+    }
+
     return (
         <section className="vh-100">
             <div className="container-fluid">
@@ -75,6 +80,7 @@ function Login() {
                                         id="loginPassword" 
                                         className="form-control form-control-lg"
                                         ref={passwordRef}
+                                        onKeyDownCapture={onKeyPress}
                                         placeholder="Password"/>
                                 </div>
 

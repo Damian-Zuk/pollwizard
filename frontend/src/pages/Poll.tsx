@@ -19,7 +19,7 @@ function Poll() {
         created_at: "",
         voted_for: -1,
         options: [],
-        _title_is_link: false
+        _is_poll_page: false
     });
 
     useEffect(() => {
@@ -35,7 +35,7 @@ function Poll() {
 
     return (
         <div className="container poll-forms-container">
-            <PollForm {...data} _title_is_link={false}/>
+            <PollForm {...data} _is_poll_page={true}/>
         </div>
     );
 }

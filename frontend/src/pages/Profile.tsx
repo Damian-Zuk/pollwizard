@@ -1,19 +1,19 @@
-import { useAuthUser } from 'react-auth-kit'
-import { useIsAuthenticated } from 'react-auth-kit';
-import { Navigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import PollsContainer from '../components/PollsContainer';
 
-function Profile()
-{
-    const isAuthenticated = useIsAuthenticated()
-    const auth = useAuthUser()
-
-    if (!isAuthenticated())
-        return <Navigate to="/" />;
+function Profile() {
+    const { username } = useParams()
 
     return (
-        <div className="container poll-forms-container">
-            <h1>Hello {auth()?.name}!</h1>
-        </div>
+        <>
+            <div className="container text-center">
+                <h1><b>{username}</b></h1>
+                <h3>User profile view</h3>
+                <h4 className="mt-5">List of polls</h4>
+                <hr />
+            </div>
+            <PollsContainer endpoint={`user?username=${username}`} />
+        </>
     );
 }
 

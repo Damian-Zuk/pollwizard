@@ -18,6 +18,7 @@ import Navbar from './components/Navbar'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import "react-toastify/dist/ReactToastify.css"
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import "./styles/main.css"
 
 import background from "./assets/interlaced.png"
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
     element: <Logout />,
   },
   {
-    path: "/profile",
+    path: "/profile/:username",
     element: <Profile />,
   },
   {

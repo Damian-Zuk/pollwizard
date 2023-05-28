@@ -92,7 +92,7 @@ function SignUp() {
                 }
             });
         } catch (err: any) {
-            toast.error(err.response!.data.detail, {
+            toast.error(err.response!.data.errors, {
                 position: "top-center",
                 autoClose: 2000,
             });
