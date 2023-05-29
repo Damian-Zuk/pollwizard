@@ -1,5 +1,9 @@
 /* ============= Global ============= */
 
+body {
+  background-image: url("interlaced.png");
+}
+
 a {
   color: #c3ffa2;
 }
@@ -265,4 +269,12 @@ a:hover {
 
 .react-confirm-alert-overlay {
   background: rgba(255, 255, 255, 0.5);
+}
+
+.react-confirm-alert-button-group button {
+  color: white;
+}
+
+.react-confirm-alert-button-group button[label="Delete"] {
+  background-color: #BB2D3B;
 }

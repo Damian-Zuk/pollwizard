@@ -1,13 +1,14 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useSignIn } from 'react-auth-kit'
 import { Navigate } from "react-router-dom";
 import { useIsAuthenticated } from 'react-auth-kit';
 import { toast } from 'react-toastify'
 import axios from "axios";
 
-function Login() {
-    const emailRef = useRef<HTMLInputElement>(null)
-    const passwordRef = useRef<HTMLInputElement>(null)
+function Login() 
+{
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
     const [error, setError] = useState("")
     
     const signIn = useSignIn();
@@ -18,34 +19,38 @@ function Login() {
 
     const onSubmit = async () => {
 
-        if (!emailRef.current?.value.length || !passwordRef.current?.value.length)
+        if (!email.length || !password.length)
             return;
 
         try {
-            const response = await axios.post("http://localhost:8000/users/login",
-            {
-                "email": emailRef.current.value,
-                "password": passwordRef.current.value
+            const response = await axios.post("http://localhost:8000/users/login", {
+                "email": email,
+                "password": password
             })
-            if ("error" in response.data)
-                setError("Invalid email address or password!")
-            else
-            {
-                signIn({
-                    token: response.data.token,
-                    expiresIn: 3600,
-                    tokenType: "Bearer",
-                    authState: { email: emailRef.current!.value, name: response.data.userName }
+            try {
+                const userDataResponse = await axios.get("http://localhost:8000/users/", {
+                    headers: { Authorization: `Bearer ${response.data.access_token}`}
                 })
-            }
-        } catch (err: any) {
-            if (err.response!.status == 422)
-                setError("Invalid email address or password!")
-            else 
-                toast.error(err.response!.data.detail, {
+                signIn({
+                    tokenType: "Bearer",
+                    token: response.data.access_token,
+                    expiresIn: 600,
+                    refreshToken: response.data.refresh_token,
+                    refreshTokenExpireIn: 86400,
+                    authState: { 
+                        email: userDataResponse.data.email,
+                        name: userDataResponse.data.name,
+                    }
+                })
+            } catch (err) {
+                console.log(err)
+                toast.error("Unexpected error occured during fetching user data", {
                     position: "top-center",
                     autoClose: 2000,
                 });
+            }
+        } catch (err) {
+            setError("Invalid email address or password!")
         }
     }
 
@@ -59,7 +64,7 @@ function Login() {
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-sm-6 mx-auto">
-                        <div className="d-flex align-items-center h-custom-2 px-5 ms-xl-4 mt-5 pt-5 pt-xl-0 mt-xl-n5">
+                        <div className="d-flex align-items-center mt-5">
 
                             <form className="login-form mx-auto">
 
@@ -71,7 +76,8 @@ function Login() {
                                         type="email"
                                         id="loginEmail" 
                                         className="form-control form-control-lg"
-                                        ref={emailRef}
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         placeholder="Email" />
                                 </div>
 
@@ -79,7 +85,8 @@ function Login() {
                                     <input type="password" 
                                         id="loginPassword" 
                                         className="form-control form-control-lg"
-                                        ref={passwordRef}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                         onKeyDownCapture={onKeyPress}
                                         placeholder="Password"/>
                                 </div>

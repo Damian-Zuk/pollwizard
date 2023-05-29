@@ -100,7 +100,7 @@ function PollForm(props: PollFormProps) {
                 navigate("/")
             setDeleted(true)
         } catch (err: any) {
-            toast.error(err.response!.data.error, {
+            toast.error(err.response!.data.detail, {
                 position: "top-center",
                 autoClose: 2000,
                 hideProgressBar: true
@@ -111,15 +111,15 @@ function PollForm(props: PollFormProps) {
     const showDeleteConfirmation = (e: any, pollID: number, isPollPage: boolean) => {
         e.preventDefault()
         confirmAlert({
-            title: 'Confirmation',
-            message: 'Are you sure to delete this poll?',
+            title: "Confirmation",
+            message: "Are you sure you want to delete this poll?",
             buttons: [
               {
-                label: 'Delete',
+                label: "Delete",
                 onClick: () => onDelete(pollID, isPollPage)
               },
               {
-                label: 'Cancel',
+                label: "Cancel",
                 onClick: () => {}
               }
             ]

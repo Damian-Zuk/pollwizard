@@ -3,7 +3,6 @@ import "react-toastify/dist/ReactToastify.css"
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import "./styles/main.css"
 
-import ReactDOM from 'react-dom/client'
 import {
   createBrowserRouter,
   RouterProvider,
@@ -59,7 +58,7 @@ const router = createBrowserRouter([
   },
 ]);
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+const App = () => (
   <AuthProvider authType={'cookie'}
                 authName={'_auth'}
                 refresh={refreshApi}
@@ -68,5 +67,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <ToastContainer />
     <Navbar />
     <RouterProvider router={router} />
-  </AuthProvider>,
-)
+  </AuthProvider>
+);
+
+export default App;
