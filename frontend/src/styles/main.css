@@ -1,7 +1,7 @@
 /* ============= Global ============= */
 
 body {
-  background-image: url("interlaced.png");
+  background-image: url("http://localhost:5173/interlaced.png");
 }
 
 a {

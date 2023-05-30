@@ -14,7 +14,7 @@ function PollsContainer(props: {endpoint: string}) {
 
     useEffect(() => {
         axios
-            .get(`http://localhost:8000/polls/${props.endpoint}`, {
+            .get(`polls/${props.endpoint}`, {
                 headers: isAuthenticated() ? {Authorization: authHeader()} : {}
             })
             .then((response) => {

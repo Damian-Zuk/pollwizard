@@ -30,7 +30,7 @@ def create_get_response(polls : list[Poll], db: Session, auth_user: User=None):
         "title": poll.title,
         "created_at": poll.created_at,
         "created_by": userCrud.get_user(db, poll.user_id).name,
-        "voted_for": voteCrud.get_user_vote_id(db, auth_user, poll) if auth_user else -1,
+        "voted_for": voteCrud.get_user_vote_option_id(db, auth_user, poll) if auth_user else -1,
         "options": [{
             "id": option.id,
             "value": option.value,
@@ -72,12 +72,14 @@ async def create_poll(token: Annotated[str, Depends(JWTBearer())], poll: schema.
     user = get_user_identity(token, db)
     
     if not len(poll.title):
-        return {"error": "Poll title cannot be empty"}
+        raise HTTPException(status_code=422, detail="Poll title cannot be empty")
     if len(poll.options) < 2:
-        return {"error": "Poll must contain at least two options"}
+        raise HTTPException(status_code=422, detail="Poll must contain at least two options")
+    if len(poll.options) > 16:
+        raise HTTPException(status_code=422, detail="Poll can have maximum 16 options")
     for option in poll.options:
         if not len(option):
-            return {"error": "Poll option cannot be empty"}
+            raise HTTPException(status_code=422, detail="Poll option cannot be empty")
     
     created_poll = pollCrud.create_poll(db, poll, user.id)
     optionCrud.add_options_to_poll(db, poll.options, created_poll.id)
@@ -89,13 +91,14 @@ async def vote_for_poll(token: Annotated[str, Depends(JWTBearer())], option_id: 
     user = get_user_identity(token, db)
     
     if not db.query(PollOptions).filter(PollOptions.id==option_id).count():
-        return {"error": "This option does not exists"}
+        raise HTTPException(status_code=400, detail="This option does not exist")
 
     poll = pollCrud.get_poll(db, optionCrud.get_poll_id(db, option_id))
-    if voteCrud.get_user_vote_id(db, user, poll) != -1:
-        return {"error": "You already voted for this poll"}
+    if voteCrud.get_user_vote_option_id(db, user, poll) != -1:
+        raise HTTPException(status_code=400, detail="You already voted for this poll")
     
     return voteCrud.vote_for_poll(db, user.id, option_id)
+
 
 @router.delete("/")
 async def delete_poll(token: Annotated[str, Depends(JWTBearer())], poll_id: int, db: Session = Depends(get_db)):
@@ -103,7 +106,7 @@ async def delete_poll(token: Annotated[str, Depends(JWTBearer())], poll_id: int,
     poll = pollCrud.get_poll(db, poll_id)
     
     if user.id != poll.user_id:
-        return {"error": "You are not an author"}
+        raise HTTPException(status_code=400, detail="You are not an author")
     
     pollCrud.delete_poll(db, poll)
     return {"message": "Deleted"}

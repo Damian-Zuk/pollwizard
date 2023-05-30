@@ -21,7 +21,7 @@ function CreatePoll() {
 
     const onSubmit = async () => {
         try {
-            const response = await axios.post("http://localhost:8000/polls",
+            const response = await axios.post("polls",
             {
                 title: pollTitle,
                 options: optionValues
@@ -45,8 +45,10 @@ function CreatePoll() {
     }
 
     const addOption = () => {
-        setOptionCount(optionCount + 1)
-        setOptionValues([...optionValues, ""])
+        if (optionCount <= 16) {
+            setOptionCount(optionCount + 1)
+            setOptionValues([...optionValues, ""])
+        }
     }
 
     const removeOption = (e: any, index: number) => {

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from auth.pass_util import verify_password, check_password_complexity
 from typing import Annotated
 import time
+import re
 
 from models.user import schema
 from models.user import crud
@@ -43,6 +44,9 @@ async def user_signup(user: schema.UserCreate, db: Session = Depends(get_db)):
 
     if check_password_complexity(user.password):
         errors["pass"] = "The password is not complex enough!"
+
+    if re.match(r"^[a-zA-Z0-9_]+$", user.name) is None:
+        errors["name"] = "This is not valid name!"
 
     if len(errors):
         return {"errors": errors}

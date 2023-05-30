@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List
+import html
 
 from . import model
 
@@ -17,7 +18,7 @@ def get_poll_id(db: Session, optionID: int):
 
 def add_options_to_poll(db: Session, options: List[str], pollID: int):
     for option in options:
-        db_option = model.PollOptions(value=option, poll_id=pollID)
+        db_option = model.PollOptions(value=html.escape(option, quote=True), poll_id=pollID)
         db.add(db_option)
         db.commit()
         db.refresh(db_option)

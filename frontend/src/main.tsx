@@ -10,6 +10,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from 'react-auth-kit';
 import { ToastContainer } from 'react-toastify';
+import axios from 'axios';
 
 import refreshApi from './auth/RefreshApi';
 
@@ -23,6 +24,7 @@ import Poll from './pages/Poll';
 
 import Navbar from './components/Navbar'
 
+axios.defaults.baseURL = "http://localhost:8000/"
 
 const router = createBrowserRouter([
   {

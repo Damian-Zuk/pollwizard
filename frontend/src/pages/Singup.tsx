@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import { useIsAuthenticated } from 'react-auth-kit';
 import { useSignIn } from 'react-auth-kit'
 import { toast } from 'react-toastify'
@@ -25,6 +26,7 @@ function SignUp() {
     
     const isAuthenticated = useIsAuthenticated()
     const signIn = useSignIn();
+    const navigate = useNavigate();
 
     if (isAuthenticated())
         return <Navigate to="/" />;
@@ -63,7 +65,7 @@ function SignUp() {
                 return;
 
         try {
-            const response = await axios.post("http://localhost:8000/users/signup",
+            const response = await axios.post("users/signup",
             {
                 email: email,
                 name: name,
@@ -83,9 +85,11 @@ function SignUp() {
                 onClose: () => {
                     signIn(
                         {
-                            token: response.data.token,
-                            expiresIn: 3600,
                             tokenType: "Bearer",
+                            token: response.data.access_token,
+                            expiresIn: 600,
+                            refreshToken: response.data.refresh_token,
+                            refreshTokenExpireIn: 86400,
                             authState: { email: email, name: name }
                         }
                     )

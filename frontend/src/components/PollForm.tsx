@@ -41,15 +41,14 @@ function PollForm(props: PollFormProps) {
     const onVote = async (event: any) => {
         event.preventDefault()
 
-        if (!isAuthenticated())
+        const auth = isAuthenticated()
+        if (!auth)
             navigate('/login');
-
-        if (selectedOption == -1)
+        if (selectedOption == -1 || !auth)
             return
         
         try {
-            const response =  await axios.post(`http://localhost:8000/polls/vote?option_id=${selectedOption}`, {},
-            {
+            const response = await axios.post(`polls/vote?option_id=${selectedOption}`, {}, {
                 headers: { Authorization: authHeader() }
             })
 
@@ -88,7 +87,7 @@ function PollForm(props: PollFormProps) {
 
     const onDelete = async (pollID: number, isPollPage: boolean) => {
         try {
-            await axios.delete(`http://localhost:8000/polls/?poll_id=${pollID}`, {
+            await axios.delete(`polls/?poll_id=${pollID}`, {
                 headers: { Authorization: authHeader() }
             })
             toast.success(`The poll has been deleted`, {

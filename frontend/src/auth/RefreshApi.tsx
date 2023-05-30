@@ -12,7 +12,7 @@ const refreshApi = createRefresh({
         authUserState
     }) => {
         try {
-            const response = await axios.post("http://localhost:8000/users/refresh", {}, {
+            const response = await axios.post("users/refresh", {}, {
                 headers: {'Authorization': `Bearer ${refreshToken}`}}
             )
             return {
@@ -25,7 +25,7 @@ const refreshApi = createRefresh({
             console.error(error)
             return {
                 isSuccess: false,
-                newAuthToken: "<token error>"
+                newAuthToken: "<invalid token>"
             } 
         }    
     }

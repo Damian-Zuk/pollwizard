@@ -23,12 +23,12 @@ function Login()
             return;
 
         try {
-            const response = await axios.post("http://localhost:8000/users/login", {
+            const response = await axios.post("users/login", {
                 "email": email,
                 "password": password
             })
             try {
-                const userDataResponse = await axios.get("http://localhost:8000/users/", {
+                const userDataResponse = await axios.get("users", {
                     headers: { Authorization: `Bearer ${response.data.access_token}`}
                 })
                 signIn({

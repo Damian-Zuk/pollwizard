@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+import html
 
 from . import model, schema
 from ..poll_options import crud as optionsCrud
@@ -13,7 +14,7 @@ def get_poll(db: Session, poll_id: int):
 
 
 def create_poll(db: Session, poll: schema.PollCreate, userID: int):
-    db_poll = model.Poll(title=poll.title, user_id=userID)
+    db_poll = model.Poll(title=html.escape(poll.title, quote=True), user_id=userID)
     db.add(db_poll)
     db.commit()
     db.refresh(db_poll)
