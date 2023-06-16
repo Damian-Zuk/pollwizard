@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Navigate } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
 import { useIsAuthenticated } from 'react-auth-kit';
 import { useSignIn } from 'react-auth-kit'
 import { toast } from 'react-toastify'
@@ -21,12 +20,10 @@ function SignUp() {
     const [pass, setPassword] = useState("")
     const [repass, setPasswordRepeat] = useState("")
     const [captchaIsDone, setCaptchaIsDone] = useState(false)
-    const [signUpSuccess, setSignUpSuccess] = useState(false)
     const [error, setError] = useState<ErrorType>({email: "", name: "", pass: "", repass: "", captcha: ""})
     
     const isAuthenticated = useIsAuthenticated()
     const signIn = useSignIn();
-    const navigate = useNavigate();
 
     if (isAuthenticated())
         return <Navigate to="/" />;
@@ -65,41 +62,26 @@ function SignUp() {
                 return;
 
         try {
-            const response = await axios.post("users/signup",
-            {
+            const response = await axios.post("users/signup", {
                 email: email,
                 name: name,
                 password: pass,
             })
-
-            if ("errors" in response.data)
-            {
-                for (const [e, message] of Object.entries(response.data["errors"]))
-                    setError((prevError) => ({ ...prevError, [e]: message }));
-                return;
-            }
-            setSignUpSuccess(true)
-            toast.success("Account successfully created! Redirecting to homepage ...", {
+            signIn({
+                tokenType: "Bearer",
+                token: response.data.access_token,
+                expiresIn: 600,
+                refreshToken: response.data.refresh_token,
+                refreshTokenExpireIn: 86400,
+                authState: { email: email, name: name }
+            })
+            toast.success("You have registered sucessfully", {
                 position: "top-center",
-                autoClose: 3000,
-                onClose: () => {
-                    signIn(
-                        {
-                            tokenType: "Bearer",
-                            token: response.data.access_token,
-                            expiresIn: 600,
-                            refreshToken: response.data.refresh_token,
-                            refreshTokenExpireIn: 86400,
-                            authState: { email: email, name: name }
-                        }
-                    )
-                }
-            });
+                autoClose: 5000,
+            })
         } catch (err: any) {
-            toast.error(err.response!.data.errors, {
-                position: "top-center",
-                autoClose: 2000,
-            });
+            for (const [e, message] of Object.entries(err.response.data.detail!.errors))
+                setError((prevError) => ({ ...prevError, [e]: message }));
         }
     }
 
@@ -157,8 +139,7 @@ function SignUp() {
                                     <button 
                                         className="btn btn-success btn-lg btn-block" 
                                         type="button" 
-                                        onClick={() => onSubmit()}
-                                        disabled={signUpSuccess}>
+                                        onClick={() => onSubmit()}>
                                         Sign up
                                     </button>
                                 </div>

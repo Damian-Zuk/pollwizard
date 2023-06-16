@@ -41,42 +41,30 @@ function PollForm(props: PollFormProps) {
     const onVote = async (event: any) => {
         event.preventDefault()
 
-        const auth = isAuthenticated()
-        if (!auth)
-            navigate('/login');
-        if (selectedOption == -1 || !auth)
+        if (!isAuthenticated()) {
+            navigate('/login')
+            return
+        }
+        if (selectedOption == -1)
             return
         
         try {
-            const response = await axios.post(`polls/vote?option_id=${selectedOption}`, {}, {
+            await axios.post(`polls/vote?option_id=${selectedOption}`, {}, {
                 headers: { Authorization: authHeader() }
             })
-
-            if ("error" in response.data)
-            {
-                toast.error(response.data.error, {
-                    position: "top-center",
-                    autoClose: 2000,
-                });
-            }
-            else
-            {
-                let index = 0;
-                for (var option of props.options.values()) {
-                    if (option.id == selectedOption) {
-                        props.options[index].votes++
-                        setShowResults(true)
-                        setVoted(true)
-                        break
-                    }
-                    index++
+            for (let i = 0; i < props.options.length; i++) {
+                if (props.options[i].id == selectedOption) {
+                    props.options[i].votes++
+                    setShowResults(true)
+                    setVoted(true)
+                    break
                 }
-                toast.success(`Voted for ${props.created_by}'s poll`, {
-                    position: "top-center",
-                    autoClose: 2000,
-                    hideProgressBar: true
-                });
             }
+            toast.success(`Voted for ${props.created_by}'s poll`, {
+                position: "top-center",
+                autoClose: 2000,
+                hideProgressBar: true
+            });
         } catch (err: any) {
             toast.error(err.response!.data.detail, {
                 position: "top-center",

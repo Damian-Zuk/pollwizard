@@ -70,6 +70,7 @@ function CreatePoll() {
                             type="text"
                             id={`pollOption_${i}`}
                             value={optionValues.at(i)}
+                            maxLength={100}
                             onChange={(e) => {
                                 let copy = [...optionValues]
                                 copy[i] = e.target.value
@@ -108,6 +109,7 @@ function CreatePoll() {
                                 type="text"
                                 id="pollTitle"
                                 value={pollTitle}
+                                maxLength={200}
                                 onChange={(e) => setPollTitle(e.target.value)}
                                 className="form-control"
                                 placeholder="Enter title..."

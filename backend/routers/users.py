@@ -42,14 +42,14 @@ async def user_signup(user: schema.UserCreate, db: Session = Depends(get_db)):
     if crud.get_user_by_name(db, user.name):
         errors["name"] = "This name is already in use!"
 
-    if check_password_complexity(user.password):
+    if not check_password_complexity(user.password):
         errors["pass"] = "The password is not complex enough!"
 
     if re.match(r"^[a-zA-Z0-9_]+$", user.name) is None:
         errors["name"] = "This is not valid name!"
 
     if len(errors):
-        return {"errors": errors}
+        raise HTTPException(status_code=422, detail={"errors": errors})
     
     crud.create_user(db, user)
     return signJWT(user.email)
@@ -57,9 +57,9 @@ async def user_signup(user: schema.UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def user_login(user: schema.UserLogin, db: Session = Depends(get_db)):
-    tryLogin = crud.get_user_by_email(db, user.email)
-    if tryLogin:
-        if verify_password(user.password, tryLogin.password):
+    db_user = crud.get_user_by_email(db, user.email)
+    if db_user:
+        if verify_password(user.password, db_user.password):
             return signJWT(user.email)
     raise HTTPException(status_code=403, detail="Invalid email address or password!")
 

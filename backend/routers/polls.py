@@ -71,15 +71,15 @@ async def get_user_polls(username: str, db: Session = Depends(get_db)):
 async def create_poll(token: Annotated[str, Depends(JWTBearer())], poll: schema.PollCreate, db: Session = Depends(get_db)):
     user = get_user_identity(token, db)
     
-    if not len(poll.title):
-        raise HTTPException(status_code=422, detail="Poll title cannot be empty")
+    if not len(poll.title) or len(poll.title) > 200:
+        raise HTTPException(status_code=422, detail="Invalid poll title length")
     if len(poll.options) < 2:
         raise HTTPException(status_code=422, detail="Poll must contain at least two options")
     if len(poll.options) > 16:
-        raise HTTPException(status_code=422, detail="Poll can have maximum 16 options")
+        raise HTTPException(status_code=422, detail="Poll cannot have more than 16 options")
     for option in poll.options:
-        if not len(option):
-            raise HTTPException(status_code=422, detail="Poll option cannot be empty")
+        if not len(option) or len(option) > 100:
+            raise HTTPException(status_code=422, detail="Invalid poll option length")
     
     created_poll = pollCrud.create_poll(db, poll, user.id)
     optionCrud.add_options_to_poll(db, poll.options, created_poll.id)

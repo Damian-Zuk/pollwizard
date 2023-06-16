@@ -11,20 +11,20 @@ import {
 import { AuthProvider } from 'react-auth-kit';
 import { ToastContainer } from 'react-toastify';
 import axios from 'axios';
+import { lazy, Suspense } from "react";
 
 import refreshApi from './auth/RefreshApi';
-
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Profile from './pages/Profile'
-import Logout from './pages/Logout';
-import SignUp from './pages/Singup';
-import CreatePoll from './pages/CreatePoll';
-import Poll from './pages/Poll';
-
 import Navbar from './components/Navbar'
 
 axios.defaults.baseURL = "http://localhost:8000/"
+
+const Home = lazy(() => import("./pages/Home"))
+const Login = lazy(() => import("./pages/Login"))
+const Profile = lazy(() => import("./pages/Profile"))
+const Logout = lazy(() => import("./pages/Logout"))
+const SignUp = lazy(() => import("./pages/Singup"))
+const CreatePoll = lazy(() => import("./pages/CreatePoll"))
+const Poll = lazy(() => import("./pages/Poll"))
 
 const router = createBrowserRouter([
   {
@@ -69,6 +69,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 cookieSecure={window.location.protocol === "https:"}>
     <ToastContainer />
     <Navbar />
-    <RouterProvider router={router} />
+    <Suspense>
+      <RouterProvider router={router} />
+    </Suspense>
   </AuthProvider>,
 )

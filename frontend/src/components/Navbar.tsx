@@ -11,9 +11,10 @@ function Navbar() {
         <div className="container-fluid">
 
             <a className="navbar-brand mx-5" href="/">Poll<span className="light-green">Wizard</span></a>
-            <button className="navbar-toggler" type="button" data-mdb-toggle="collapse" data-mdb-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <i className="fas fa-bars"></i>
+            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                 <i className="fas fa-bars"></i>
             </button>
+
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
 
@@ -27,7 +28,7 @@ function Navbar() {
             </ul>
 
             <ul className="navbar-nav d-flex flex-row me-5">
-                <li className="nav-item me-3 me-lg-0 mx-3">
+                <li className="nav-item me-3 me-lg-0 mx-2">
                 { isAuthenticated() 
                 ? <a className="nav-link" href={`/profile/${user()?.name}`}><i className="fa-solid fa-user"></i> My profile</a>
                 : <a className="nav-link" href="/login"><i className="fa-solid fa-right-to-bracket"></i> Sign in</a> }
