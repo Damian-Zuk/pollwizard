@@ -15,7 +15,7 @@ def get_password_hash(password):
 
 
 def check_password_complexity(password):
-    return len(password) > 8 \
+    return len(password) >= 8 \
         and any(ele.isupper() for ele in password) \
         and any(ele.islower() for ele in password) \
         and numbers.search(password) \
