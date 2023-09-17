@@ -4,6 +4,10 @@ body {
   background-image: url("http://localhost:5173/interlaced.png");
 }
 
+:root {
+  --toastify-toast-width: 380px;
+}
+
 a {
   color: #c3ffa2;
 }

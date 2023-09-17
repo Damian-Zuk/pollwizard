@@ -19,9 +19,9 @@ export interface PollFormProps
     title: string,
     created_by: string,
     created_at: string,
-    voted_for: number,
     options: PollOption[],
-    _is_poll_page: boolean
+    _voted_for: number,
+    _is_single_poll_view: boolean
 }
 
 function PollForm(props: PollFormProps) {
@@ -75,10 +75,10 @@ function PollForm(props: PollFormProps) {
 
     const onDelete = async (pollID: number, isPollPage: boolean) => {
         try {
-            await axios.delete(`polls/?poll_id=${pollID}`, {
+            const response = await axios.delete(`polls/?poll_id=${pollID}`, {
                 headers: { Authorization: authHeader() }
             })
-            toast.success(`The poll has been deleted`, {
+            toast.success(response.data.detail, {
                 position: "top-center",
                 autoClose: 1000,
                 hideProgressBar: true
@@ -123,7 +123,7 @@ function PollForm(props: PollFormProps) {
             <div className="row">
                 <div className="col-md-8">
                     <div className="poll-title">
-                        {props._is_poll_page 
+                        {props._is_single_poll_view 
                         ? <h3>{props.title}</h3>
                         : <a href={`/poll/${props.id}`}><h3>{props.title}</h3></a>}
                     </div>
@@ -136,13 +136,13 @@ function PollForm(props: PollFormProps) {
                                 name="pollOption" 
                                 id={`option_${option.id}`}
                                 value={option.value} 
-                                disabled={props.voted_for != -1 || voted}
-                                checked={props.voted_for == option.id || selectedOption == option.id}
+                                disabled={props._voted_for >= 0 || voted}
+                                checked={props._voted_for == option.id || selectedOption == option.id}
                                 onChange={() => setSelectedOption(option.id)}
                             />
 
                             <label className="form-check-label d-block" htmlFor={`option_${option.id}`}>
-                                { props.voted_for == option.id || (voted && selectedOption == option.id)
+                                { props._voted_for == option.id || (voted && selectedOption == option.id)
                                 ? <span className="light-green"><b>{option.value}</b></span> 
                                 : option.value
                                 }
@@ -181,21 +181,21 @@ function PollForm(props: PollFormProps) {
                     
                     { user()?.name == props.created_by &&
                         <button className="btn btn-danger"
-                            onClick={(e) => showDeleteConfirmation(e, props.id, props._is_poll_page)}>
+                            onClick={(e) => showDeleteConfirmation(e, props.id, props._is_single_poll_view)}>
                             <i className="fa-solid fa-trash"></i>
                         </button>
                     }
 
                     <button className="btn btn-success mx-3" 
                         onClick={(e) => {e.preventDefault(); setShowResults(!showResults)}}>
-                            {showResults ? `Hide results` : `Show results` }
+                            {showResults ? `Hide results` : `View results` }
                     </button>
 
-                    { props.voted_for != -1 || voted
+                    { props._voted_for !== undefined && (props._voted_for !== -1 || voted)
                     ? <div className="d-inline-block align-middle mx-2"><i className="fa-solid fa-check"></i> Voted </div> 
                     :
                         <button className="btn btn-success" 
-                            disabled={props.voted_for != -1}
+                            disabled={props._voted_for >= 0}
                             onClick={onVote}>
                             <i className="fa-solid fa-check"></i> Vote
                         </button>

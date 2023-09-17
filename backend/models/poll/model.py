@@ -13,7 +13,7 @@ from ..poll_options import model as pollOptionsModel
 class Poll(Base):
     __tablename__ = "poll"
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(100))
+    title: Mapped[str] = mapped_column(String(200))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     options: Mapped[List["pollOptionsModel.PollOptions"]] = relationship()

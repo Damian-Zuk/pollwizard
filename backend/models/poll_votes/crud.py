@@ -15,17 +15,15 @@ def vote_for_poll(db: Session, userID: int, optionID: int):
     return db_vote
 
 
-def get_user_vote_option_id(db: Session, user: User, poll: Poll):
-    poll_options = crud.get_poll_options(db, poll.id)
+def get_user_vote(db: Session, userID: User, pollID: Poll):
+    poll_options = crud.get_poll_options(db, pollID)
     user_vote = (
         db.query(model.PollVotes)
-        .filter(model.PollVotes.user_id == user.id)
+        .filter(model.PollVotes.user_id == userID)
         .filter(model.PollVotes.poll_option_id.in_([option.id for option in poll_options]))
         .first()
     )
-    if user_vote is None:
-        return -1
-    return user_vote.poll_option_id
+    return user_vote.poll_option_id if user_vote is not None else -1
 
 
 def delete_votes(db: Session, poll: Poll):

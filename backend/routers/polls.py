@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from auth.jwt_bearer import JWTBearer
 from dependencies import get_db
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from models.user.model import User
 from models.user import crud as userCrud
 from .users import get_user_identity
 
@@ -24,13 +23,12 @@ router = APIRouter(
 )
 
 
-def create_get_response(polls : list[Poll], db: Session, auth_user: User=None):
+def compose_polls_response(polls : list[Poll], db: Session):
     return [{
         "id": poll.id,
         "title": poll.title,
         "created_at": poll.created_at,
         "created_by": userCrud.get_user(db, poll.user_id).name,
-        "voted_for": voteCrud.get_user_vote_option_id(db, auth_user, poll) if auth_user else -1,
         "options": [{
             "id": option.id,
             "value": option.value,
@@ -40,64 +38,51 @@ def create_get_response(polls : list[Poll], db: Session, auth_user: User=None):
 
 
 @router.get("/")
-async def get_poll(poll_id: int, db: Session = Depends(get_db), authorization: str = Header(default=None)):
+async def get_poll(poll_id: int, db: Session = Depends(get_db)):
     poll = pollCrud.get_poll(db, poll_id)
     if poll is None:
-        raise HTTPException(status_code=404, detail="Poll not found")
-    if authorization:
-        token = authorization.split(" ")[1]
-        user = get_user_identity(token, db)
-        return create_get_response([poll], db, user)
-    return create_get_response([poll], db)
+        raise HTTPException(status_code=404, detail="Poll not found.")
+    return compose_polls_response([poll], db)
 
 
 @router.get("/all")
-async def get_polls(db: Session = Depends(get_db), authorization: str = Header(default=None)):
+async def get_polls(db: Session = Depends(get_db)):
     polls = pollCrud.get_polls(db)
-    if authorization:
-        token = authorization.split(" ")[1]
-        user = get_user_identity(token, db)
-        return create_get_response(polls, db, user)
-    return create_get_response(polls, db)
+    return compose_polls_response(polls, db)
 
 
 @router.get("/user")
 async def get_user_polls(username: str, db: Session = Depends(get_db)):
     user = userCrud.get_user_by_name(db, username)
-    return create_get_response(user.polls, db)
+    return compose_polls_response(user.polls, db)
 
 
-@router.post("/")
+@router.post("/", status_code=201)
 async def create_poll(token: Annotated[str, Depends(JWTBearer())], poll: schema.PollCreate, db: Session = Depends(get_db)):
     user = get_user_identity(token, db)
-    
-    if not len(poll.title) or len(poll.title) > 200:
-        raise HTTPException(status_code=422, detail="Invalid poll title length")
-    if len(poll.options) < 2:
-        raise HTTPException(status_code=422, detail="Poll must contain at least two options")
-    if len(poll.options) > 16:
-        raise HTTPException(status_code=422, detail="Poll cannot have more than 16 options")
-    for option in poll.options:
-        if not len(option) or len(option) > 100:
-            raise HTTPException(status_code=422, detail="Invalid poll option length")
-    
     created_poll = pollCrud.create_poll(db, poll, user.id)
     optionCrud.add_options_to_poll(db, poll.options, created_poll.id)
-    return {"id": created_poll.id}
-    
+    return {"id": created_poll.id} 
+ 
 
-@router.post("/vote")
+@router.post("/vote", status_code=201)
 async def vote_for_poll(token: Annotated[str, Depends(JWTBearer())], option_id: int, db: Session = Depends(get_db)):
     user = get_user_identity(token, db)
-    
+
     if not db.query(PollOptions).filter(PollOptions.id==option_id).count():
-        raise HTTPException(status_code=400, detail="This option does not exist")
+        raise HTTPException(status_code=422, detail="The selected poll option does not exist.")
 
     poll = pollCrud.get_poll(db, optionCrud.get_poll_id(db, option_id))
-    if voteCrud.get_user_vote_option_id(db, user, poll) != -1:
-        raise HTTPException(status_code=400, detail="You already voted for this poll")
+    if voteCrud.get_user_vote(db, user.id, poll.id) != -1:
+        raise HTTPException(status_code=422, detail="You have already voted on this poll.")
     
     return voteCrud.vote_for_poll(db, user.id, option_id)
+
+
+@router.get("/my-votes")
+async def get_user_vote(token: Annotated[str, Depends(JWTBearer())], poll_ids: str, db: Session = Depends(get_db)):
+    user = get_user_identity(token, db)
+    return { poll_id: voteCrud.get_user_vote(db, user.id, poll_id) for poll_id in poll_ids.split(',') }
 
 
 @router.delete("/")
@@ -106,7 +91,7 @@ async def delete_poll(token: Annotated[str, Depends(JWTBearer())], poll_id: int,
     poll = pollCrud.get_poll(db, poll_id)
     
     if user.id != poll.user_id:
-        raise HTTPException(status_code=400, detail="You are not an author")
+        raise HTTPException(status_code=403, detail="You are not the author of this poll.")
     
     pollCrud.delete_poll(db, poll)
-    return {"message": "Deleted"}
+    return {"detail": "The poll has been deleted."}

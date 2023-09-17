@@ -70,7 +70,7 @@ function CreatePoll() {
                             type="text"
                             id={`pollOption_${i}`}
                             value={optionValues.at(i)}
-                            maxLength={100}
+                            maxLength={200}
                             onChange={(e) => {
                                 let copy = [...optionValues]
                                 copy[i] = e.target.value
