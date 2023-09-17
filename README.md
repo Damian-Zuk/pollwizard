@@ -1,53 +1,60 @@
 
 # pollwizard
-University group project: Web application for conducting surveys and voting.
+<p align="center">Web application for creating polls and voting.</p>
+
+#### Libraries and frameworks used:
+* FastAPI
+* React.js
+* Bootstrap
+* SQLAlchemy
+
+<br />
 
 ![App](https://i.imgur.com/tY9fCn4.png)
+
 ## Setup
-* Install Python3
-* Install Node.JS
-* Install MySQL
-* Create database and app user 
-* Clone this repository
-```bash
-git clone https://github.com/kreedyX/pollwizard
-```
+#### Environment setup
+* Install Python.
+* Install Node.JS.
+* Setup SQL database
+* (optional) Create Python virtual environment.
+
 #### Backend setup
-* In "backend" directory create ".env" file containing following variables:
+* Add the following environmental variables to the ".env" file, replacing the placeholders with your specific values.
 ```ini
-# DB Config
-db_user = <db_appuser>
-db_pass = <db_password>
-db_host = 127.0.0.1
-db_port = 3306
-db_name = <db_name>
-# JWT Config
-secret = 92fdc312748bb9b62df6a2ac76f68b248c3dedc79cbf5173797572813d16c47a
-algorithm = HS256
+db_user = <your_database_username>
+db_pass = <your_database_password>
+db_host = <your_database_host>
+db_port = <your_database_port>
+db_name = <your_database_name>
+
+jwt_secret = <your_256_bit_secret_key>
+jwt_algorithm = HS256
+jwt_access_token_time = 600
+jwt_refresh_token_time = 86400
 ```
-* Open terminal in "backend" directory
-* (optional) Create Python virtual environment and activate it
-```bash
-python3 -m venv env
-env/Scripts/activate
+
+* Open your terminal and install python modules.
 ```
-* Install python modules
-```bash
 pip3 install -r requirements.txt
 ```
-* Run backend server
-```bash
+* Run the server.
+```
 uvicorn main:app --reload
 ```
 
-#### Frontend setup
-* Open terminal in "frontend" directory
-* Install packages
-```bash
-npm install
+* You can visit this URL to view auto-generated API documentation.
 ```
-* Run frontend server
-```bash
-npm run dev
+http://127.0.0.1:8000/docs
 ```
 
+#### Frontend setup
+* Open your terminal and install packages.
+```
+npm install
+```
+
+* Run the server.
+```
+npm run dev
+```
