@@ -1,8 +1,8 @@
 from passlib.context import CryptContext
 import re
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-specials = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+specials = re.compile(r'[@_!#$%^&*()<>?/\|}{~:]')
 numbers = re.compile('[0-9]')
 
 

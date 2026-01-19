@@ -1,60 +1,91 @@
 
 # pollwizard
-<p align="center">Web application for creating polls and voting.</p>
+Web application for creating single-question polls and voting.
 
-#### Libraries and frameworks used:
+#### Technologies used:
 * FastAPI
+* SQLAlchemy ORM
+* PostgreSQL
+* Redis
 * React.js
 * Bootstrap
-* SQLAlchemy
 
 <br />
 
 ![App](https://i.imgur.com/tY9fCn4.png)
 
-## Setup
-#### Environment setup
-* Install Python.
-* Install Node.JS.
-* Setup SQL database
-* (optional) Create Python virtual environment.
+# Setup
 
-#### Backend setup
-* Add the following environmental variables to the ".env" file, replacing the placeholders with your specific values.
+Create `.env` file with following content:
 ```ini
-db_user = <your_database_username>
-db_pass = <your_database_password>
-db_host = <your_database_host>
-db_port = <your_database_port>
-db_name = <your_database_name>
+db_host = postgres
+db_user = <db_user>
+db_pass = <db_pass> 
+db_port = 5432
+db_name = pollwizard
 
-jwt_secret = <your_256_bit_secret_key>
+redis_host = redis
+redis_port = 6379
+redis_pass = <redis_pass>
+
+jwt_secret = <256 bit secret key>
 jwt_algorithm = HS256
-jwt_access_token_time = 600
-jwt_refresh_token_time = 86400
+jwt_access_token_time = 300
+jwt_refresh_token_time = 600
+jwt_redis_index = 0
+
+rate_limiter_redis_index = 1
 ```
 
-* Open your terminal and install python modules.
+
+## Docker setup
+
+### Backend setup
+```
+docker compose up --build
+```
+
+### Frontend setup
+```
+docker build -t react-app .
+docker run -p 5173:5173 react-app
+```
+
+## Manual setup
+### Environment setup
+* Install Python
+* Install Node.JS
+* Setup PostgreSQL database
+* Setup Redis server
+* Create Python virtual environment (`backend` directory):
+```
+python -m venv venv
+./venv/Scripts/activate
+```
+
+### Backend setup
+* Install python modules:
 ```
 pip3 install -r requirements.txt
 ```
-* Run the server.
+
+* Run the server:
 ```
 uvicorn main:app --reload
 ```
 
-* You can visit this URL to view auto-generated API documentation.
+* You can visit URL below to view Swagger generated API documentation:
 ```
 http://127.0.0.1:8000/docs
 ```
 
 #### Frontend setup
-* Open your terminal and install packages.
+* Install packages:
 ```
 npm install
 ```
 
-* Run the server.
+* Run the server:
 ```
 npm run dev
 ```

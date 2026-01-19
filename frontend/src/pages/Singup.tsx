@@ -69,9 +69,9 @@ function SignUp() {
             })
             signIn({
                 tokenType: "Bearer",
-                token: response.data.access_token,
+                token: response.data.access,
                 expiresIn: 600,
-                refreshToken: response.data.refresh_token,
+                refreshToken: response.data.refresh,
                 refreshTokenExpireIn: 86400,
                 authState: { email: email, name: name }
             })

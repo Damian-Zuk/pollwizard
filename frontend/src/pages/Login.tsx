@@ -29,18 +29,22 @@ function Login()
             })
             try {
                 const userDataResponse = await axios.get("users", {
-                    headers: { Authorization: `Bearer ${response.data.access_token}`}
+                    headers: { Authorization: `Bearer ${response.data.access}` }
                 })
                 signIn({
                     tokenType: "Bearer",
-                    token: response.data.access_token,
+                    token: response.data.access,
                     expiresIn: 600,
-                    refreshToken: response.data.refresh_token,
+                    refreshToken: response.data.refresh,
                     refreshTokenExpireIn: 86400,
                     authState: { 
                         email: userDataResponse.data.email,
                         name: userDataResponse.data.name,
                     }
+                })
+                toast.success(`Welcome back, ${userDataResponse.data.name}!`, {
+                    position: "top-center",
+                    autoClose: 2000,
                 })
             } catch (err) {
                 console.log(err)
@@ -49,8 +53,14 @@ function Login()
                     autoClose: 2000,
                 });
             }
-        } catch (err) {
+        } catch (err: any) {
             setError("Invalid email address or password!")
+            if (err.response && err.response.status === 429) {
+                toast.error("Oops! It seems you've exceeded the login attempt limit. Please wait a moment and try again later.", {
+                    position: "top-center",
+                    autoClose: 2000,
+                });
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from auth.pass_util import get_password_hash
+from security.pass_util import get_password_hash
 
 from . import model, schema
 

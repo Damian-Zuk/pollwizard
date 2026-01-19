@@ -1,12 +1,18 @@
-from pydantic import BaseModel, constr, conlist, validator
+from typing import Annotated
+from pydantic import BaseModel, Field, StringConstraints, field_validator
+
+
+TitleStr = Annotated[str, StringConstraints(max_length=200)]
+OptionStr = Annotated[str, StringConstraints(min_length=1, max_length=200, strip_whitespace=True)]
 
 
 class PollCreate(BaseModel):
-    title: constr(max_length=200)
-    options: conlist(str, min_items=2, max_items=16)
+    title: TitleStr
+    options: Annotated[list[OptionStr], Field(min_length=2, max_length=16)]
 
-    @validator('options', each_item=True)
-    def validate_option_length(cls, value):
-        if len(value) < 1 or len(value) > 200:
-            raise ValueError("Each option must have a length between 1 and 200 characters.")
+    @field_validator("options")
+    @classmethod
+    def validate_options(cls, value: list[str]) -> list[str]:
+        if len(set(value)) != len(value):
+            raise ValueError("Options must be unique.")
         return value

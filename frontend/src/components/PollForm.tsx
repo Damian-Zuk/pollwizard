@@ -118,6 +118,14 @@ function PollForm(props: PollFormProps) {
         totalVotes += option.votes
     })
 
+    const formatedDate = new Date(props.created_at).toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+
     return (
         <form className="poll-form">
             <div className="row">
@@ -167,7 +175,7 @@ function PollForm(props: PollFormProps) {
                 <div className="col-md-4">
                     <div className="poll-info">
                         <div>
-                            <a href={`/profile/${props.created_by}`}>{props.created_by}</a> @ {props.created_at.replace("T", " ")}
+                            <a href={`/profile/${props.created_by}`}>{props.created_by}</a> @ {formatedDate}
                         </div>
                         <div>
                             {totalVotes} Votes

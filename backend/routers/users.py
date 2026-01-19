@@ -1,40 +1,49 @@
+
 from fastapi import APIRouter, Depends, HTTPException
-from dependencies import get_db
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.orm import Session
-from auth.pass_util import verify_password, check_password_complexity
-from typing import Annotated
+
 import time
 import re
+import logging
+from typing import Annotated
+
+from dependencies import get_db
+from security.fastapi_jwt_redis import JwtManager, JwtBearer, TokenType, AuthCredentials
+from security.pass_util import verify_password, check_password_complexity
 
 from models.user import schema
 from models.user import crud
-from models.user import model
-
-from auth.jwt_bearer import JWTBearer
-from auth.jwt_bearer import signJWT
-from auth.jwt_bearer import decodeJWT
-from auth.jwt_bearer import generate_access_token
+from models.user.model import User 
 
 
 router = APIRouter(
     prefix="/users",
     tags=["Users"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(RateLimiter(times=10, seconds=10))],
 )
 
 
 @router.get("/")
-async def get_user_data(token: Annotated[str, Depends(JWTBearer())], db: Session = Depends(get_db)):
-    user = get_user_identity(token, db)
+async def get_user_data(
+    credentials: Annotated[AuthCredentials, Depends(JwtBearer())],
+    db: Session = Depends(get_db)
+):
+    user = get_user_identity(credentials, db)
+    session_time = time.gmtime(int(credentials.exp) - time.time())
     return {
         "name": user.name,
         "email": user.email,
-        "session": time.strftime("%H:%M:%S", time.gmtime(int(decodeJWT(token).get("exp")) - time.time()))
+        "session": time.strftime("%H:%M:%S", session_time)
     }
 
 
-@router.post("/signup")
-async def user_signup(user: schema.UserCreate, db: Session = Depends(get_db)):
+@router.post("/signup", dependencies=[Depends(RateLimiter(times=3, seconds=60))])
+async def user_signup(
+    user: schema.UserCreate,
+    db: Session = Depends(get_db)
+):
     errors = {}
 
     if crud.get_user_by_email(db, user.email):
@@ -52,27 +61,34 @@ async def user_signup(user: schema.UserCreate, db: Session = Depends(get_db)):
     if len(errors):
         raise HTTPException(status_code=422, detail={"errors": errors})
     
-    crud.create_user(db, user)
-    return signJWT(user.email)
+    user_db = crud.create_user(db, user)
+    return JwtManager.generate_token_pair({"user_id": user_db.id})
 
 
 @router.post("/login")
-def user_login(user: schema.UserLogin, db: Session = Depends(get_db)):
+async def user_login(
+    user: schema.UserLogin, 
+    db: Session = Depends(get_db)
+):
     user_db = crud.get_user_by_email(db, user.email)
     if user_db and verify_password(user.password, user_db.password):
-            return signJWT(user_db.email)
-    raise HTTPException(status_code=403, detail="Invalid email address or password!")
+        return JwtManager.generate_token_pair({"user_id": user_db.id})
+    raise HTTPException(status_code=401, detail="Invalid email address or password.")
 
 
 @router.post("/refresh")
-def user_login(refresh_token: Annotated[str, Depends(JWTBearer(token_type="refresh"))]):
-    user_email = decodeJWT(refresh_token).get("user_email")
-    return generate_access_token(user_email)
+async def refresh(credentials: Annotated[AuthCredentials, Depends(JwtBearer(TokenType.REFRESH))]):
+    return JwtManager.refresh_token_pair(credentials)
 
 
-def get_user_identity(token: str, db: Session):
-    try:
-        user_email = decodeJWT(token).get("user_email")
-        return crud.get_user_by_email(db, user_email)
-    except AttributeError:
-        return model.User(id=0)
+@router.post("/logout", status_code=204)
+async def logout(credentials: Annotated[AuthCredentials, Depends(JwtBearer())]):
+    JwtManager.revoke_token(credentials)
+
+
+def get_user_identity(credentials: AuthCredentials, db: Session) -> User:
+    user = crud.get_user(db, credentials["user_id"])
+    if user is None:
+        logging.error("<users::get_user_identity> User not found.")
+        raise HTTPException(status_code=401, detail="Invalid bearer token.")
+    return user

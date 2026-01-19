@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
-from auth.jwt_bearer import JWTBearer
-from dependencies import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.orm import Session
-from typing import Annotated
+from typing import Annotated, List
+
+from dependencies import get_db
+from security.fastapi_jwt_redis import JwtBearer, AuthCredentials
 
 from models.user import crud as userCrud
 from .users import get_user_identity
@@ -20,6 +22,7 @@ router = APIRouter(
     prefix="/polls",
     tags=["Polls"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(RateLimiter(times=10, seconds=10))]
 )
 
 
@@ -38,7 +41,10 @@ def compose_polls_response(polls : list[Poll], db: Session):
 
 
 @router.get("/")
-async def get_poll(poll_id: int, db: Session = Depends(get_db)):
+async def get_poll(
+    poll_id: int,
+    db: Session = Depends(get_db)
+):
     poll = pollCrud.get_poll(db, poll_id)
     if poll is None:
         raise HTTPException(status_code=404, detail="Poll not found.")
@@ -46,29 +52,41 @@ async def get_poll(poll_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/all")
-async def get_polls(db: Session = Depends(get_db)):
+async def get_polls(
+    db: Session = Depends(get_db)
+):
     polls = pollCrud.get_polls(db)
     return compose_polls_response(polls, db)
 
 
 @router.get("/user")
-async def get_user_polls(username: str, db: Session = Depends(get_db)):
+async def get_user_polls(
+    username: str,
+    db: Session = Depends(get_db)
+):
     user = userCrud.get_user_by_name(db, username)
     return compose_polls_response(user.polls, db)
 
 
-@router.post("/", status_code=201)
-async def create_poll(token: Annotated[str, Depends(JWTBearer())], poll: schema.PollCreate, db: Session = Depends(get_db)):
-    user = get_user_identity(token, db)
+@router.post("/", status_code=201, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+async def create_poll(
+    credentials: Annotated[AuthCredentials, Depends(JwtBearer())],
+    poll: schema.PollCreate,
+    db: Session = Depends(get_db)
+):   
+    user = get_user_identity(credentials, db)
     created_poll = pollCrud.create_poll(db, poll, user.id)
     optionCrud.add_options_to_poll(db, poll.options, created_poll.id)
     return {"id": created_poll.id} 
  
 
 @router.post("/vote", status_code=201)
-async def vote_for_poll(token: Annotated[str, Depends(JWTBearer())], option_id: int, db: Session = Depends(get_db)):
-    user = get_user_identity(token, db)
-
+async def vote_for_poll(
+    credentials: Annotated[AuthCredentials, Depends(JwtBearer())],
+    option_id: int,
+    db: Session = Depends(get_db)
+):
+    user = get_user_identity(credentials, db)
     if not db.query(PollOptions).filter(PollOptions.id==option_id).count():
         raise HTTPException(status_code=422, detail="The selected poll option does not exist.")
 
@@ -80,14 +98,30 @@ async def vote_for_poll(token: Annotated[str, Depends(JWTBearer())], option_id: 
 
 
 @router.get("/my-votes")
-async def get_user_vote(token: Annotated[str, Depends(JWTBearer())], poll_ids: str, db: Session = Depends(get_db)):
-    user = get_user_identity(token, db)
-    return { poll_id: voteCrud.get_user_vote(db, user.id, poll_id) for poll_id in poll_ids.split(',') }
+async def get_user_vote(
+    credentials: Annotated[AuthCredentials, Depends(JwtBearer())],
+    poll_ids: str = Query(..., min_length=1),
+    db: Session = Depends(get_db),
+):
+    user = get_user_identity(credentials, db)
+
+    ids = [int(pid) for pid in poll_ids.split(",") if pid.strip().isdigit()]
+    if not ids:
+        raise HTTPException(400, "poll_ids must contain at least one valid ID")
+
+    return {
+        poll_id: voteCrud.get_user_vote(db, user.id, poll_id)
+        for poll_id in ids
+    }
 
 
 @router.delete("/")
-async def delete_poll(token: Annotated[str, Depends(JWTBearer())], poll_id: int, db: Session = Depends(get_db)):
-    user = get_user_identity(token, db)
+async def delete_poll(
+    credentials: Annotated[AuthCredentials, Depends(JwtBearer())],
+    poll_id: int,
+    db: Session = Depends(get_db)
+):
+    user = get_user_identity(credentials, db)
     poll = pollCrud.get_poll(db, poll_id)
     
     if user.id != poll.user_id:
